@@ -2,7 +2,7 @@
 
 var jQuery;
 var wssh = {};
-
+var randomString;
 
 (function() {
     // For FormData without getter and setter
@@ -296,7 +296,6 @@ jQuery(function($){
         console.log(text);
     }
 
-
     function ajax_complete_callback(resp) {
         btn.prop('disabled', false);
 
@@ -310,8 +309,10 @@ jQuery(function($){
         if (!msg.data) {
             log_status(msg.status);
             state = DISCONNECTED;
+            alert("连接失败，请检查连接信息");
             return;
         }
+        randomString=msg.data;
 
         var  ws_url = window.location.href.split("/")[2],
             url = "ws://" + ws_url + '/shell/' + msg.data,
@@ -325,7 +326,6 @@ jQuery(function($){
                     background: url_opts_data.bgcolor || 'black'
                 }
             });
-
         console.log(url);
         if (!msg.encoding) {
             console.log('Unable to detect the default encoding of your server');
@@ -469,6 +469,7 @@ jQuery(function($){
             term.focus();
             state = CONNECTED;
             title_element.text = url_opts_data.title || default_title;
+            $("#filetransfer").show();
         };
 
         sock.onmessage = function(msg) {
@@ -489,6 +490,7 @@ jQuery(function($){
             state = DISCONNECTED;
             default_title = 'WebSSH';
             title_element.text = default_title;
+            $("#filetransfer").hide();
         };
 
         $(window).resize(function(){

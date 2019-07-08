@@ -12,6 +12,7 @@ public class SSHInfo {
     private String hostname;
     private String username;
     private String password;
+    private Integer port;
 
     public String getHostname() {
         return hostname;
@@ -35,5 +36,13 @@ public class SSHInfo {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }

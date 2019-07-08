@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title> WebSSH </title>
+    <title> 登录 </title>
     <link href="img/favicon.png" rel="icon" type="image/png">
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <link href="css/xterm.min.css" rel="stylesheet" type="text/css"/>
@@ -24,16 +24,12 @@
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container" style="width: 500px;margin-top: 80px">
     <form id="connect" action="/sshInfo" method="post" enctype="multipart/form-data"><!--{% if debug %} novalidate{% end %}-->
         <div class="row">
             <div class="col">
                 <label for="Hostname">Hostname</label>
                 <input class="form-control" type="text" id="hostname" name="hostname" value="" required>
-            </div>
-            <div class="col">
-                <label for="Port">Port</label>
-                <input class="form-control" type="number" id="port" name="port" placeholder="22" value="" min=1 max=65535>
             </div>
         </div>
         <div class="row">
@@ -41,18 +37,17 @@
                 <label for="Username">Username</label>
                 <input class="form-control" type="text" id="username" name="username" value="" required>
             </div>
-            <div class="col">
-                <label for="Username">Private Key</label>
-                <input class="form-control" type="file" id="privatekey" name="privatekey" value="">
-            </div>
         </div>
         <div class="row">
             <div class="col">
                 <label for="Password">Password</label>
                 <input class="form-control" type="password" name="password" value="">
             </div>
+        </div>
+        <div class="row">
             <div class="col">
-                If Private Key is chosen, password will be used to decrypt the Private Key if it is encrypted, otherwise used as the password of username.
+                <label for="Port">Port</label>
+                <input class="form-control" type="number" id="port" name="port" placeholder="22" value="" min=1 max=65535>
             </div>
         </div>
         <!--{% module xsrf_form_html() %}-->
@@ -63,9 +58,13 @@
 </div>
 
 <div class="container">
-    <div id="status" style="color: red;"></div>
-    <div id="terminal"></div>
+    <div id="status" style="color: red;">
+    </div>
+    <div id="terminal">
+        <button type="" class="btn btn-primary" id="filetransfer" style="position:fixed;right:20px;top:0px;display: none;z-index: 256;background-color: #0f2d4e" onclick="javascrtpt:window.open('page/filefransfer.html?'+randomString)">文件传输</button>
+    </div>
 </div>
+
 
 <script src="js/jquery.min.js"></script>
 <script src="js/popper.min.js"></script>

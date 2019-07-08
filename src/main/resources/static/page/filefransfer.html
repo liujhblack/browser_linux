@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> 文件传输 </title>
+    <link href="../img/fileTransferTitle.png" rel="icon" type="image/png">
+    <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <script src="../js/jquery.min.js"></script>
+    <script>
+        $(function () {
+            $(".randomStringId").val(window.location.search.substring(1));
+
+            $("#fileuploadbtn").click(function () {
+                $("#filedownloaddiv").hide();
+                $("#fileuploadform").toggle();
+            });
+            $("#filedownloadbtn").click(function () {
+                $("#fileuploadform").hide();
+                $("#filedownloaddiv").toggle();
+            });
+            $("#fileupload").click(function () {
+                var randomString = $(".randomStringId").val();
+                var file = $("#validatedCustomFile")[0].files[0];
+                if(file==null){
+                    alert("请选择文件");
+                    return;
+                }
+                if (file.size / 1024 / 1024 > 200) {
+                    alert("文件过大，请选择小于200M的文件");
+                    return;
+                };
+
+                var path = $.trim($("#linuxFilePath").val());
+                if(path==''){
+                    alert("请输入目录位置");
+                    return;
+                }
+                var formData = new FormData();
+                formData.append("file", file);
+                formData.append("path", path);
+                formData.append("randomString", randomString);
+
+                $("#fileupload").attr('disabled', true);
+                $("#uploadprogressdiv").show();
+                $.ajax({
+                    url: "/upload",
+                    dataType: "json",
+                    type: "POST",
+                    data: formData,
+                    processData: false, // 使数据不做处理
+                    contentType: false, // 不要设置Content-Type请求头
+                    enctype: 'multipart/form-data',
+                    xhr: function () {
+                        //获取ajax中的ajaxSettings的xhr对象  为他的upload属性绑定progress事件的处理函数
+                        var myXhr = new XMLHttpRequest();
+                        if (myXhr.upload) {
+                            //检查其属性upload是否存在
+                            myXhr.upload.addEventListener("progress", function resultProgress(e) {
+                                var percent = e.loaded / e.total * 100 + "%";
+                                $("#uploadprogress").css("width", percent);
+                            }, false);
+                        }
+                        return myXhr;
+                    },
+                    success: function (data) {
+                        $("#uploadprogressdiv").hide();
+                        $("#fileupload").attr('disabled', false);
+                        $("#uploadprogress").css("width", "0%");
+                        if (data.code == 200) {
+                            alert('上传成功！');
+                        } else {
+                            alert(data.message);
+                        }
+                    },
+                    error: function (response) {
+                        $("#uploadprogress").css("width", "0%");
+                        $("#fileupload").attr('disabled', false);
+                        $("#uploadprogressdiv").hide();
+                        alert('上传失败！');
+                        console.log(response);
+                    }
+                })
+            });
+
+            $("#filedownload").click(function () {
+                var randomString = $(".randomStringId").val();
+                $.ajax({
+                    url: "/sshStatus",
+                    dataType: "json",
+                    type: "GET",
+                    data: {"randomString": randomString},
+                    success:function (data) {
+                        if(data.data=='0'){
+                            alert("连接已断开，请重新登录");
+                            return;
+                        }else{
+                            var path = $.trim($("#linuxFilePath0").val());
+                            var flag = path.substring(path.lastIndexOf("/") + 1);
+                            if (flag.indexOf(".") == -1) {
+                                alert("只支持文件下载！！请输入文件名称！！");
+                                return;
+                            }else{
+                                $("#filedownloadform").submit();
+                            }
+                        }
+                    }
+                });
+            });
+
+
+        });
+    </script>
+</head>
+<body>
+<div style="margin:100px auto 0;width: 300px;">
+    <div>
+        <button type="button" class="btn btn-outline-primary" style="width: 300px" id="fileuploadbtn">文件上传</button>
+    </div>
+    <div style="margin-top: 30px;">
+        <button type="button" class="btn btn-outline-primary" style="width: 300px" id="filedownloadbtn">文件下载</button>
+    </div>
+    <div style="margin-top: 10px;display:none;" id="fileuploadform">
+        <div class="custom-file" style="height:78px;">
+            <p style="position: absolute; top:0;height:40px;line-height:40px;">选择本地文件</p>
+            <input type="file" class="custom-file-input" style="top:40px;" id="validatedCustomFile" required>
+            <label class="custom-file-label" style="top:40px;" for="validatedCustomFile">Choose file...</label>
+        </div>
+        <div class="form-group">
+            <label for="linuxFilePath" style="margin-top: 10px">linux目录位置</label>
+            <input type="text" class="form-control" id="linuxFilePath">
+        </div>
+        <input type="hidden" name="randomString" class="randomStringId">
+        <button type="submit" class="btn btn-primary" id="fileupload">上传</button>
+    </div>
+    <div style="margin-top: 10px;display:none;" id="filedownloaddiv">
+        <form action="/download" method="post" id="filedownloadform">
+            <div class="form-group" style="margin-bottom: 10px">
+                <label for="linuxFilePath0" style="margin-top: 10px">linux文件位置</label>
+                <input type="text" class="form-control" id="linuxFilePath0" name="path">
+                <small class="form-text text-muted">请确认文件存在，否则下载空文件</small>
+                <input type="hidden" name="randomString" class="randomStringId">
+            </div>
+        </form>
+        <button id="filedownload" class="btn btn-primary">下载</button>
+    </div>
+
+    <div class="progress" id="uploadprogressdiv" style="margin-top: 10px;display: none">
+        <div class="progress-bar progress-bar-striped" id="uploadprogress" role="progressbar" style="width: 0%"
+             aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>
+
+
+</body>
+</html>

@@ -31,6 +31,8 @@ public class MyWebSocket {
 
     private Connection sshconnection;
 
+    private String randomString;
+
     /**
      * 连接建立成功调用的方法
      *
@@ -38,6 +40,7 @@ public class MyWebSocket {
      */
     @OnOpen
     public void onOpen(@PathParam("randomString") String randomString, Session socketSession) throws IOException {
+        this.randomString=randomString;
         this.socketSession = socketSession;
         this.sshSession = SSHMapUtil.getSSHSession(randomString);
         this.sshconnection = SSHMapUtil.getSSHConnection(randomString);
@@ -56,6 +59,8 @@ public class MyWebSocket {
     public void onClose() {
         sshSession.close();
         sshconnection.close();
+        SSHMapUtil.removeSSHConnection(randomString);
+        SSHMapUtil.removeSSHSession(randomString);
         System.out.println("关闭连接,当前会话数量：" + --count);
     }
 
