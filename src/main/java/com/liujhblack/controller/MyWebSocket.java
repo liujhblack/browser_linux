@@ -44,11 +44,12 @@ public class MyWebSocket {
         this.socketSession = socketSession;
         this.sshSession = SSHMapUtil.getSSHSession(randomString);
         this.sshconnection = SSHMapUtil.getSSHConnection(randomString);
+        out = new PrintWriter(new OutputStreamWriter(sshSession.getStdin(), "UTF-8"));
+
         ReadThread readThread1 = new ReadThread(sshSession.getStdout(), this, "UTF-8");
         ReadThread readThread2 = new ReadThread(sshSession.getStderr(), this, "UTF-8");
         readThread1.start();
         readThread2.start();
-        out = new PrintWriter(new OutputStreamWriter(sshSession.getStdin(), "UTF-8"));
         System.out.println("建立连接成功,当前会话数量：" + ++count);
     }
 
