@@ -1,4 +1,4 @@
-# browser_linux 当前版本 v1.1
+# browser_linux 当前版本 v1.10
 ###### 已完成功能：远程登陆linux系统、执行大部分linux命令、文件上传下载
 ###### 计划未完成功能：
 ###### 备注：Private Key登陆功能先不做
