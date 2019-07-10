@@ -5,15 +5,21 @@ package com.liujhblack.controller;/**
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SCPClient;
 import ch.ethz.ssh2.Session;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.liujhblack.domain.SSHInfo;
+import com.liujhblack.util.EncryptUtil;
 import com.liujhblack.util.Result;
 import com.liujhblack.util.SSHMapUtil;
+import org.apache.tomcat.util.buf.HexUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -30,8 +36,19 @@ public class SSHInfoController {
      * @Description 连接linux
      */
     @PostMapping("/sshInfo")
-    public Result save(SSHInfo sshInfo) {
+    public Result save(String encrypted) {
         try {
+            //解密
+            String rsaPrivateKey="MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBANl/EhdHlblObDgF757MzSMfunwpGuelDJvTrv3BgTEBehNcT/WQtNrP/734yVvE2E2ThH8DwV26TSgdwvTfbxIw5lVQABiEkKjElh4sFd99YlHUCSWMG/aabYU5ZBN4LICZ/VrbJYXfDR/T6ZuDau/Jx7ELqJTuqIx+qwcV2p/7AgMBAAECgYEAt3/zRnraAr78pQO1GHjYNmMllm2jyn7BNZOSl3u0QSFq2nzO5XNScy58Kc6GLIvWpxTn+7WyZh6xzD/X5XvBm7xCt+L6ZPt5O7/wqUqjp6WAPufymbXwBiyyzz0DJL6w+0CkMul6FivjV628zHVgSYi7jlkRTk9W9m7I2S5YusECQQDtkcxlvNrc38o/tvxWyW5sY8O9rmHIZdGVMyt0bcYBlsRrg2M6mBWtZfWUfNRpeSqBHft+q3v5ezO1VMkYO2hhAkEA6l6dB1ilHD9E+Q1LrmmYPmQN1FgP+9YNoH22CgKpLpKwWpxqaaRhhaCccrGqMjmFM5nnA3R8ifF12qIARNR12wJBAMQagBDTLg75JGgn0nCJYf9S8vcWhVz4v2JblNlM7A/Ptl/RWw25ENvLuEZULLrL7AwdBcbwIywzSOG8FStNjsECQDJ7Fo+ShF3FMvIB7x8uF2C45FGsdiTkQiMjcKZPVGl3pwydTD5c7bR+l7QMmIAg65PlvmB8IqcDn0LsSeqJaKkCQCEOF5Zk4nqXD0363LbgucRuJpn4sES/6uJL0jCDu1AGxZq2wvbl6sJ1EG5/cHVgzXc9NmWBcvFLN7q9Oq6pGXg=";
+            String res = EncryptUtil.rsaPrivateKeyDecode(encrypted, rsaPrivateKey);
+
+            String[] split = res.split(",");
+            SSHInfo sshInfo=new SSHInfo();
+            sshInfo.setHostname(split[0]);
+            sshInfo.setUsername(split[1]);
+            sshInfo.setPassword(split[2]);
+            sshInfo.setPort(Integer.valueOf(split[3]));
+
             Connection connection = new Connection(sshInfo.getHostname(), sshInfo.getPort());
             connection.connect();
             boolean flag = connection.authenticateWithPassword(sshInfo.getUsername(), sshInfo.getPassword());
@@ -126,5 +143,7 @@ public class SSHInfoController {
             return Result.isSuccess("1");//表示连接未断开
         }
     }
+
+
 
 }

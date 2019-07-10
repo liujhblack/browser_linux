@@ -4,7 +4,7 @@ var jQuery;
 var wssh = {};
 var randomString;
 
-(function() {
+(function () {
     // For FormData without getter and setter
     var proto = FormData.prototype,
         data = {};
@@ -35,7 +35,7 @@ var randomString;
 }());
 
 
-jQuery(function($){
+jQuery(function ($) {
     var status = $('#status'),
         btn = $('.btn-primary'),
         style = {},
@@ -64,7 +64,7 @@ jQuery(function($){
         for (i = 0; i < names.length; i++) {
             name = names[i];
             value = data.get(name);
-            if (value){
+            if (value) {
                 window.localStorage.setItem(name, value);
             }
         }
@@ -74,11 +74,11 @@ jQuery(function($){
     function restore_items(names) {
         var i, name, value;
 
-        for (i=0; i < names.length; i++) {
+        for (i = 0; i < names.length; i++) {
             name = names[i];
             value = window.localStorage.getItem(name);
             if (value) {
-                $('#'+name).val(value);
+                $('#' + name).val(value);
             }
         }
     }
@@ -96,7 +96,7 @@ jQuery(function($){
     function decode_uri(uri) {
         try {
             return decodeURI(uri);
-        } catch(e) {
+        } catch (e) {
             console.error(e);
         }
         return '';
@@ -195,7 +195,7 @@ jQuery(function($){
         }
 
         if (custom_font_is_loaded()) {
-            var new_fonts =  custom_font.family + ', ' + default_fonts;
+            var new_fonts = custom_font.family + ', ' + default_fonts;
             term.setOption('fontFamily', new_fonts);
             term.font_family_updated = true;
             console.log('Using custom font family ' + new_fonts);
@@ -210,7 +210,7 @@ jQuery(function($){
         }
 
         if (default_fonts) {
-            term.setOption('fontFamily',  default_fonts);
+            term.setOption('fontFamily', default_fonts);
             term.font_family_updated = false;
             console.log('Using default font family ' + default_fonts);
         }
@@ -229,7 +229,7 @@ jQuery(function($){
             decoder = new window.TextDecoder('utf-8', {'fatal': true});
         }
 
-        reader.onload = function() {
+        reader.onload = function () {
             var text;
             try {
                 text = decoder.decode(reader.result);
@@ -257,7 +257,7 @@ jQuery(function($){
             encoding = 'utf-8';
         }
 
-        reader.onload = function() {
+        reader.onload = function () {
             if (callback) {
                 callback(reader.result);
             }
@@ -312,9 +312,9 @@ jQuery(function($){
             alert("连接失败，请检查连接信息");
             return;
         }
-        randomString=msg.data;
+        randomString = msg.data;
 
-        var  ws_url = window.location.href.split("/")[2],
+        var ws_url = window.location.href.split("/")[2],
             url = "ws://" + ws_url + '/shell/' + msg.data,
             sock = new window.WebSocket(url),
             encoding = 'utf-8',
@@ -378,13 +378,13 @@ jQuery(function($){
         }
 
 
-        wssh.geometry = function() {
+        wssh.geometry = function () {
             // for console use
             var geometry = current_geometry(term);
             console.log('Current window geometry: ' + JSON.stringify(geometry));
         };
 
-        wssh.send = function(data) {
+        wssh.send = function (data) {
             // for console use
             if (!sock) {
                 console.log('Websocket was already closed');
@@ -405,7 +405,7 @@ jQuery(function($){
             }
         };
 
-        wssh.reset_encoding = function() {
+        wssh.reset_encoding = function () {
             // for console use
             if (encoding === msg.encoding) {
                 console.log('Already reset to ' + msg.encoding);
@@ -414,7 +414,7 @@ jQuery(function($){
             }
         };
 
-        wssh.resize = function(cols, rows) {
+        wssh.resize = function (cols, rows) {
             // for console use
             if (term === undefined) {
                 console.log('Terminal was already destroryed');
@@ -423,7 +423,7 @@ jQuery(function($){
 
             var valid_args = false;
 
-            if (cols > 0 && rows > 0)  {
+            if (cols > 0 && rows > 0) {
                 var geometry = current_geometry(term);
                 if (cols <= geometry.cols && rows <= geometry.rows) {
                     valid_args = true;
@@ -437,19 +437,19 @@ jQuery(function($){
             }
         };
 
-        wssh.set_bgcolor = function(color) {
+        wssh.set_bgcolor = function (color) {
             set_backgound_color(term, color);
         };
 
-        wssh.custom_font = function() {
+        wssh.custom_font = function () {
             update_font_family(term);
         };
 
-        wssh.default_font = function() {
+        wssh.default_font = function () {
             reset_font_family(term);
         };
 
-        term.on_resize = function(cols, rows) {
+        term.on_resize = function (cols, rows) {
             if (cols !== this.cols || rows !== this.rows) {
                 console.log('Resizing terminal to geometry: ' + format_geometry(cols, rows));
                 this.resize(cols, rows);
@@ -457,12 +457,12 @@ jQuery(function($){
             }
         };
 
-        term.on('data', function(data) {
+        term.on('data', function (data) {
             // console.log(data);
             sock.send(JSON.stringify({'data': data}));
         });
 
-        sock.onopen = function() {
+        sock.onopen = function () {
             term.open(terminal);
             toggle_fullscreen(term);
             update_font_family(term);
@@ -472,15 +472,15 @@ jQuery(function($){
             $("#filetransfer").show();
         };
 
-        sock.onmessage = function(msg) {
+        sock.onmessage = function (msg) {
             read_file_as_text(msg.data, term_write, decoder);
         };
 
-        sock.onerror = function(e) {
+        sock.onerror = function (e) {
             console.error(e);
         };
 
-        sock.onclose = function(e) {
+        sock.onclose = function (e) {
             console.log(e);
             term.destroy();
             term = undefined;
@@ -493,7 +493,7 @@ jQuery(function($){
             $("#filetransfer").hide();
         };
 
-        $(window).resize(function(){
+        $(window).resize(function () {
             if (term) {
                 resize_terminal(term);
             }
@@ -504,11 +504,11 @@ jQuery(function($){
     function wrap_object(opts) {
         var obj = {};
 
-        obj.get = function(attr) {
+        obj.get = function (attr) {
             return opts[attr] || '';
         };
 
-        obj.set = function(attr, val) {
+        obj.set = function (attr, val) {
             opts[attr] = val;
         };
 
@@ -547,7 +547,7 @@ jQuery(function($){
         } else if (!username) {
             msg = 'Need value username';
         } else if (!hostname_tester.test(hostname)) {
-            msg =  'Invalid hostname: ' + hostname;
+            msg = 'Invalid hostname: ' + hostname;
         } else if (port <= 0 || port > 65535) {
             msg = 'Invalid port: ' + port;
         } else {
@@ -561,7 +561,7 @@ jQuery(function($){
 
         if (!msg || debug) {
             result.valid = true;
-            msg = username + '@' + hostname + ':'  + port;
+            msg = username + '@' + hostname + ':' + port;
         }
 
         result.msg = msg;
@@ -599,9 +599,18 @@ jQuery(function($){
 
         disable_file_inputs(inputs);
         data = new FormData(form);
-        pk = data.get('privatekey');
-        enable_file_inputs(inputs);
+        /* pk = data.get('privatekey');
+         enable_file_inputs(inputs);*/
 
+        //数据加密
+        var dataString=data.get("hostname")+","+data.get("username")+","+data.get("password")+","+data.get("port");
+        if(dataString.length>52){
+            alert("连接信息过长，请检查连接信息是否正确");
+        }
+        var PUBLIC_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDZfxIXR5W5Tmw4Be+ezM0jH7p8KRrnpQyb0679wYExAXoTXE/1kLTaz/+9+MlbxNhNk4R/A8Fduk0oHcL0328SMOZVUAAYhJCoxJYeLBXffWJR1AkljBv2mm2FOWQTeCyAmf1a2yWF3w0f0+mbg2rvycexC6iU7qiMfqsHFdqf+wIDAQAB";
+        var encrypt = new JSEncrypt();
+        encrypt.setPublicKey(PUBLIC_KEY);
+        var encrypted = encrypt.encrypt(dataString);//长度限制52
         function ajax_post() {
             store_items(fields, data);
 
@@ -611,11 +620,12 @@ jQuery(function($){
             $.ajax({
                 url: url,
                 type: 'post',
-                data: data,
-                complete: ajax_complete_callback,
-                cache: false,
+                data: {encrypted:encrypted},
+                dataType:"json",
+                complete: ajax_complete_callback
+                /*cache: false,
                 contentType: false,
-                processData: false
+                processData: false*/
             });
         }
 
@@ -626,7 +636,7 @@ jQuery(function($){
         }
 
         if (pk && pk.size && !debug) {
-            read_file_as_text(pk, function(text) {
+            read_file_as_text(pk, function (text) {
                 if (text === undefined) {
                     log_status('Invalid private key: ' + pk.name);
                 } else {
@@ -686,13 +696,11 @@ jQuery(function($){
                     hostname: hostname,
                     port: port,
                     username: username,
-                    password: password,
-                    privatekey: privatekey
+                    password: password
                 };
             } else {
                 opts = hostname;
             }
-
             result = connect_with_options(opts);
         }
 
@@ -704,14 +712,13 @@ jQuery(function($){
 
     wssh.connect = connect;
 
-    $(form_id).submit(function(event){
+    $(form_id).submit(function (event) {
         event.preventDefault();
         connect();
     });
 
 
-    function cross_origin_connect(event)
-    {
+    function cross_origin_connect(event) {
         console.log(event.origin);
         var prop = 'connect',
             args;
