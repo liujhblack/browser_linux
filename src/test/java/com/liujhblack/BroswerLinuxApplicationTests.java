@@ -1,21 +1,11 @@
 package com.liujhblack;
 
 import com.liujhblack.util.EncryptUtil;
-import com.liujhblack.util.Result;
-import org.apache.tomcat.util.buf.HexUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.crypto.*;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Base64;
-import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -29,7 +19,6 @@ public class BroswerLinuxApplicationTests {
 
 		String s = EncryptUtil.rsaPublicKeyEncode(src, publicKey);
 		String s1 = EncryptUtil.rsaPrivateKeyDecode(s, rsaPrivateKey);
-
 
 	}
 

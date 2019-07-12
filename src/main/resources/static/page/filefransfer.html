@@ -21,17 +21,18 @@
             $("#fileupload").click(function () {
                 var randomString = $(".randomStringId").val();
                 var file = $("#validatedCustomFile")[0].files[0];
-                if(file==null){
+                if (file == null) {
                     alert("请选择文件");
                     return;
                 }
-                if (file.size / 1024 / 1024 > 200) {
-                    alert("文件过大，请选择小于200M的文件");
+                if (file.size / 1024 / 1024 > 100) {
+                    alert("文件过大，请选择小于100M的文件");
                     return;
-                };
+                }
+                ;
 
                 var path = $.trim($("#linuxFilePath").val());
-                if(path==''){
+                if (path == '') {
                     alert("请输入目录位置");
                     return;
                 }
@@ -83,31 +84,15 @@
             });
 
             $("#filedownload").click(function () {
-                var randomString = $(".randomStringId").val();
-                $.ajax({
-                    url: "/sshStatus",
-                    dataType: "json",
-                    type: "GET",
-                    data: {"randomString": randomString},
-                    success:function (data) {
-                        if(data.data=='0'){
-                            alert("连接已断开，请重新登录");
-                            return;
-                        }else{
-                            var path = $.trim($("#linuxFilePath0").val());
-                            var flag = path.substring(path.lastIndexOf("/") + 1);
-                            if (flag.indexOf(".") == -1) {
-                                alert("只支持文件下载！！请输入文件名称！！");
-                                return;
-                            }else{
-                                $("#filedownloadform").submit();
-                            }
-                        }
-                    }
-                });
+                var path = $.trim($("#linuxFilePath0").val());
+                var flag = path.substring(path.lastIndexOf("/") + 1);
+                if (flag.indexOf(".") == -1) {
+                    alert("只支持文件下载！！请输入文件名称！！");
+                    return;
+                } else {
+                    $("#filedownloadform").submit();
+                }
             });
-
-
         });
     </script>
 </head>

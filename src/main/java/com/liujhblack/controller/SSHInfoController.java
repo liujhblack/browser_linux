@@ -38,12 +38,12 @@ public class SSHInfoController {
     @PostMapping("/sshInfo")
     public Result save(String encrypted) {
         try {
-            //解密
-            String rsaPrivateKey="MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBANl/EhdHlblObDgF757MzSMfunwpGuelDJvTrv3BgTEBehNcT/WQtNrP/734yVvE2E2ThH8DwV26TSgdwvTfbxIw5lVQABiEkKjElh4sFd99YlHUCSWMG/aabYU5ZBN4LICZ/VrbJYXfDR/T6ZuDau/Jx7ELqJTuqIx+qwcV2p/7AgMBAAECgYEAt3/zRnraAr78pQO1GHjYNmMllm2jyn7BNZOSl3u0QSFq2nzO5XNScy58Kc6GLIvWpxTn+7WyZh6xzD/X5XvBm7xCt+L6ZPt5O7/wqUqjp6WAPufymbXwBiyyzz0DJL6w+0CkMul6FivjV628zHVgSYi7jlkRTk9W9m7I2S5YusECQQDtkcxlvNrc38o/tvxWyW5sY8O9rmHIZdGVMyt0bcYBlsRrg2M6mBWtZfWUfNRpeSqBHft+q3v5ezO1VMkYO2hhAkEA6l6dB1ilHD9E+Q1LrmmYPmQN1FgP+9YNoH22CgKpLpKwWpxqaaRhhaCccrGqMjmFM5nnA3R8ifF12qIARNR12wJBAMQagBDTLg75JGgn0nCJYf9S8vcWhVz4v2JblNlM7A/Ptl/RWw25ENvLuEZULLrL7AwdBcbwIywzSOG8FStNjsECQDJ7Fo+ShF3FMvIB7x8uF2C45FGsdiTkQiMjcKZPVGl3pwydTD5c7bR+l7QMmIAg65PlvmB8IqcDn0LsSeqJaKkCQCEOF5Zk4nqXD0363LbgucRuJpn4sES/6uJL0jCDu1AGxZq2wvbl6sJ1EG5/cHVgzXc9NmWBcvFLN7q9Oq6pGXg=";
+            //解密 RSA非对称加密算法
+            String rsaPrivateKey = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBANl/EhdHlblObDgF757MzSMfunwpGuelDJvTrv3BgTEBehNcT/WQtNrP/734yVvE2E2ThH8DwV26TSgdwvTfbxIw5lVQABiEkKjElh4sFd99YlHUCSWMG/aabYU5ZBN4LICZ/VrbJYXfDR/T6ZuDau/Jx7ELqJTuqIx+qwcV2p/7AgMBAAECgYEAt3/zRnraAr78pQO1GHjYNmMllm2jyn7BNZOSl3u0QSFq2nzO5XNScy58Kc6GLIvWpxTn+7WyZh6xzD/X5XvBm7xCt+L6ZPt5O7/wqUqjp6WAPufymbXwBiyyzz0DJL6w+0CkMul6FivjV628zHVgSYi7jlkRTk9W9m7I2S5YusECQQDtkcxlvNrc38o/tvxWyW5sY8O9rmHIZdGVMyt0bcYBlsRrg2M6mBWtZfWUfNRpeSqBHft+q3v5ezO1VMkYO2hhAkEA6l6dB1ilHD9E+Q1LrmmYPmQN1FgP+9YNoH22CgKpLpKwWpxqaaRhhaCccrGqMjmFM5nnA3R8ifF12qIARNR12wJBAMQagBDTLg75JGgn0nCJYf9S8vcWhVz4v2JblNlM7A/Ptl/RWw25ENvLuEZULLrL7AwdBcbwIywzSOG8FStNjsECQDJ7Fo+ShF3FMvIB7x8uF2C45FGsdiTkQiMjcKZPVGl3pwydTD5c7bR+l7QMmIAg65PlvmB8IqcDn0LsSeqJaKkCQCEOF5Zk4nqXD0363LbgucRuJpn4sES/6uJL0jCDu1AGxZq2wvbl6sJ1EG5/cHVgzXc9NmWBcvFLN7q9Oq6pGXg=";
             String res = EncryptUtil.rsaPrivateKeyDecode(encrypted, rsaPrivateKey);
 
             String[] split = res.split(",");
-            SSHInfo sshInfo=new SSHInfo();
+            SSHInfo sshInfo = new SSHInfo();
             sshInfo.setHostname(split[0]);
             sshInfo.setUsername(split[1]);
             sshInfo.setPassword(split[2]);
@@ -62,6 +62,7 @@ public class SSHInfoController {
             String randomString = UUID.randomUUID().toString().replace("-", "");
             SSHMapUtil.addSSHConnection(randomString, connection);
             SSHMapUtil.addSSHSession(randomString, session);
+            SSHMapUtil.addSSHInfo(randomString,sshInfo);
 
             return Result.isSuccess(randomString);
         } catch (IOException e) {
@@ -78,8 +79,13 @@ public class SSHInfoController {
     @PostMapping("/download")
     public Result download(String path, String randomString, HttpServletResponse response) throws IOException {
         ServletOutputStream outputStream = response.getOutputStream();
-        Session sshSession = SSHMapUtil.getSSHSession(randomString);
-        Connection sshConnection = SSHMapUtil.getSSHConnection(randomString);
+        SSHInfo sshInfo = SSHMapUtil.getSSHInfo(randomString);
+        Connection sshConnection = new Connection(sshInfo.getHostname(), sshInfo.getPort());
+        sshConnection.connect();
+        boolean flag = sshConnection.authenticateWithPassword(sshInfo.getUsername(), sshInfo.getPassword());
+        if (!flag) {
+            return Result.isError("连接linux失败");
+        }
         if (sshConnection == null) {
             return Result.isError("连接已断开");
         }
@@ -101,7 +107,7 @@ public class SSHInfoController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {//是文件夹，打包下载
+        } else {//是文件夹，不支持
             return Result.isError("不支持文件夹下载");
         }
         return null;
@@ -113,8 +119,14 @@ public class SSHInfoController {
      * @Description 文件上传 从浏览器上传文件到linux
      */
     @PostMapping("upload")
-    public Result upload(@RequestParam MultipartFile file, String path, String randomString) {
-        Connection sshConnection = SSHMapUtil.getSSHConnection(randomString);
+    public Result upload(@RequestParam MultipartFile file, String path, String randomString) throws IOException {
+        SSHInfo sshInfo = SSHMapUtil.getSSHInfo(randomString);
+        Connection sshConnection = new Connection(sshInfo.getHostname(), sshInfo.getPort());
+        sshConnection.connect();
+        boolean flag = sshConnection.authenticateWithPassword(sshInfo.getUsername(), sshInfo.getPassword());
+        if (!flag) {
+            return Result.isError("连接linux失败");
+        }
         if (sshConnection == null) {
             return Result.isError("连接已断开");
         }
@@ -133,17 +145,6 @@ public class SSHInfoController {
         }
         return Result.isSuccess();
     }
-
-    @GetMapping("/sshStatus")
-    public Result getSSHStatus(String randomString){
-        Connection sshConnection = SSHMapUtil.getSSHConnection(randomString);
-        if (sshConnection == null) {
-            return Result.isSuccess("0");//表示连接已断开
-        }else{
-            return Result.isSuccess("1");//表示连接未断开
-        }
-    }
-
 
 
 }

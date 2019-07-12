@@ -18,32 +18,45 @@ public class SSHMapUtil {
 
     private static Map<String, Connection> sshConnectionMap = new HashMap<>();
     private static Map<String, Session> sshSessionMap = new HashMap<>();
+    private static Map<String, SSHInfo> sshInfoMap = new HashMap<>();
 
     private SSHMapUtil() {
     }
 
-    public synchronized static void addSSHConnection(String hostname, Connection connection) {
-        sshConnectionMap.put(hostname, connection);
+    public synchronized static void addSSHConnection(String randomString, Connection connection) {
+        sshConnectionMap.put(randomString, connection);
     }
 
-    public synchronized static Connection getSSHConnection(String hostname) {
-        return sshConnectionMap.get(hostname);
+    public synchronized static Connection getSSHConnection(String randomString) {
+        return sshConnectionMap.get(randomString);
     }
 
-    public synchronized static void removeSSHConnection(String hostname) {
-        sshConnectionMap.remove(hostname);
+    public synchronized static void removeSSHConnection(String randomString) {
+        sshConnectionMap.remove(randomString);
     }
 
-    public synchronized static void addSSHSession(String hostname, Session session) {
-        sshSessionMap.put(hostname, session);
+    public synchronized static void addSSHSession(String randomString, Session session) {
+        sshSessionMap.put(randomString, session);
     }
 
-    public synchronized static Session getSSHSession(String hostname) {
-        return sshSessionMap.get(hostname);
+    public synchronized static Session getSSHSession(String randomString) {
+        return sshSessionMap.get(randomString);
     }
 
-    public synchronized static void removeSSHSession(String hostname) {
-        sshSessionMap.remove(hostname);
+    public synchronized static void removeSSHSession(String randomString) {
+        sshSessionMap.remove(randomString);
+    }
+
+    public synchronized static void addSSHInfo(String randomString, SSHInfo sshInfo) {
+        sshInfoMap.put(randomString, sshInfo);
+    }
+
+    public synchronized static SSHInfo getSSHInfo(String randomString) {
+        return sshInfoMap.get(randomString);
+    }
+
+    public synchronized static void removeSSHInfo(String randomString) {
+        sshInfoMap.remove(randomString);
     }
 
 

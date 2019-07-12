@@ -91,6 +91,7 @@ public class MyWebSocket {
     @OnError
     public void onError(Session session, Throwable error) {
         error.printStackTrace();
+        System.out.println("websocket发生错误");
     }
 
     /**
