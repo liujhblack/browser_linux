@@ -1,78 +1,169 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title> 登录 </title>
+    <title>登录</title>
     <link href="img/favicon.png" rel="icon" type="image/png">
-    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
-    <link href="css/xterm.min.css" rel="stylesheet" type="text/css"/>
-    <link href="css/fullscreen.min.css" rel="stylesheet" type="text/css"/>
-    <style>
-        .row {
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-        .container {
-            margin-top: 20px;
-        }
-        .btn {
-            margin-top: 10px;
-        }
-        .btn-danger {
-            margin-left: 5px;
-        }
-    </style>
+            <meta name="idea viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+                        <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+                        <link href="css/xterm.min.css" rel="stylesheet" type="text/css"/>
+                        <style>
+            .row {
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                }
+
+            .container {
+                    margin-top: 20px;
+                }
+
+            .btn {
+                    margin-top: 10px;
+                }
+
+            .btn-danger {
+                    margin-left: 5px;
+                }
+            </style>
+
+                <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- 导入term.js这个包 -->
+    <script type="text/javascript" src="js/xterm.min.js"></script>
+    <script type="text/javascript" src="js/jsencrypt.min.js"></script>
+
+    <!-- 导入这个页面依赖的js -->
+    <script>
+        var randomString = null;
+        $(function () {
+            var term = null;
+            var webSocket = null;
+            var hostname = null;
+            var username = null;
+            $("#commit").click(function () {
+                hostname = $("#hostname").val();
+                username = $("#username").val();
+                var password = $("#password").val();
+                var port = $("#port").val();
+                if (hostname.trim() == '' || username.trim() == '' || password.trim() == '' || port.trim() == '') {
+                    alert("请填写完整信息");
+                    return;
+                }
+                ;
+                //数据加密
+                var dataString = hostname + "," + username + "," + password + "," + port;
+                if (dataString.length > 52) {
+                    alert("连接信息过长，请检查连接信息是否正确");
+                    return;
+                }
+                var PUBLIC_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDZfxIXR5W5Tmw4Be+ezM0jH7p8KRrnpQyb0679wYExAXoTXE/1kLTaz/+9+MlbxNhNk4R/A8Fduk0oHcL0328SMOZVUAAYhJCoxJYeLBXffWJR1AkljBv2mm2FOWQTeCyAmf1a2yWF3w0f0+mbg2rvycexC6iU7qiMfqsHFdqf+wIDAQAB";
+                var encrypt = new JSEncrypt();
+                encrypt.setPublicKey(PUBLIC_KEY);
+                var encrypted = encrypt.encrypt(dataString);//长度限制52
+                $.ajax({
+                    url: "/sshInfo",
+                    type: 'post',
+                    data: {encrypted: encrypted},
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.code == 200) {
+                            randomString = data.data;
+                            openTerm();
+                        } else {
+                            alert(data.message);
+                        }
+                    }
+                });
+            });
+            function openTerm() {
+                var ws_url = window.location.href.split("/")[2];
+                var url = "ws://" + ws_url + '/shell/' + randomString;
+                webSocket = new WebSocket(url);
+                webSocket.onopen = function () {
+                    term = new Terminal({
+                        cursorBlink: true,//光标闪烁
+                        cursorStyle: "block", // 光标样式  null | 'block' | 'underline' | 'bar'
+                        scrollback: 800, //回滚行数
+                        theme: {
+                            background: 'black'
+                        }
+                    });
+                    $("#loginInfo").hide();
+                    term.open($("#terminal").empty()[0]);
+                    document.title = username + "@" + hostname;
+                    $("#filetransfer").show();
+                    term_onresize();
+                    term.focus();//焦点
+                    term.on("data", function (data) {
+                        webSocket.send(JSON.stringify({'data': data}));
+                    });
+                };
+                //接收消息的情况
+                webSocket.onmessage = function (binaryData) {
+                    var reader = new window.FileReader();
+                    reader.readAsText(binaryData.data);
+                    //写数据到term 控制台
+                    reader.onload = function () {
+                        term.write(reader.result);
+                    };
+                };
+
+                //连接失败的情况
+                webSocket.onerror = function () {
+                    alert("连接失败");
+                    location.reload();
+                };
+            };
+            function term_onresize() {
+                if (term != null) {
+                    var cols = parseInt(window.innerWidth / term._core.renderer.dimensions.actualCellWidth, 10) - 1;
+                    var rows = parseInt(window.innerHeight / term._core.renderer.dimensions.actualCellHeight, 10);
+                    term.resize(cols, rows);
+                }
+            }
+
+            $(window).resize(function () {
+                    term_onresize();
+            });
+
+        });
+    </script>
+
 </head>
 <body>
-<div class="container" style="width: 500px;margin-top: 80px">
-    <form id="connect" action="/sshInfo" method="post" enctype="multipart/form-data"><!--{% if debug %} novalidate{% end %}-->
-        <div class="row">
-            <div class="col">
-                <label for="Hostname">Hostname</label>
-                <input class="form-control" type="text" id="hostname" name="hostname" value="" required>
-            </div>
+<div id="loginInfo" class="container" style="width: 500px;margin-top: 80px">
+    <div class="row">
+        <div class="col">
+            <label for="Hostname">Hostname</label>
+            <input class="form-control" type="text" id="hostname" name="hostname" value="39.107.33.18" required>
         </div>
-        <div class="row">
-            <div class="col">
-                <label for="Username">Username</label>
-                <input class="form-control" type="text" id="username" name="username" value="" required>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <label for="Password">Password</label>
-                <input class="form-control" type="password" name="password" value="" required>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <label for="Port">Port</label>
-                <input class="form-control" type="number" id="port" name="port" value="22" min=1 max=65535 required>
-            </div>
-        </div>
-        <!--{% module xsrf_form_html() %}-->
-        <button type="submit" class="btn btn-primary">Connect</button>
-        <button type="reset" class="btn btn-danger">Reset</button>
-    </form>
-
-</div>
-
-<div class="container">
-    <div id="status" style="color: red;">
     </div>
-    <div id="terminal">
-        <button type="" class="btn btn-primary" id="filetransfer" style="position:fixed;right:20px;top:0px;display: none;z-index: 256;background-color: #0f2d4e" onclick="javascrtpt:window.open('page/filefransfer.html?'+randomString)">文件传输</button>
+    <div class="row">
+        <div class="col">
+            <label for="Username">Username</label>
+            <input class="form-control" type="text" id="username" name="username" value="root" required>
+        </div>
     </div>
+    <div class="row">
+        <div class="col">
+            <label for="Password">Password</label>
+            <input class="form-control" type="password" id="password" name="password" value="Liu123456" required>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <label for="Port">Port</label>
+            <input class="form-control" type="number" id="port" name="port" value="22" min=1 max=65535 required>
+        </div>
+    </div>
+    <button id="commit" class="btn btn-primary">Connect</button>
+    <button type="reset" class="btn btn-danger">Reset</button>
 </div>
+<div id="terminal"></div>
+<button class="btn btn-primary" id="filetransfer"
+        style="position:fixed;right:20px;top:0px;display: none;z-index: 256;background-color: #0f2d4e"
+        onclick="javascrtpt:window.open('/page/filefransfer.html?'+randomString)">文件传输
+</button>
 
-
-<script src="js/jquery.min.js"></script>
-<script src="js/popper.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/xterm.min.js"></script>
-<script src="js/fullscreen.min.js"></script>
-<!--引入jsencrypt.js-->
-<script src="http://passport.cnblogs.com/scripts/jsencrypt.min.js"></script>
-<script src="js/main.js"></script>
 </body>
 </html>

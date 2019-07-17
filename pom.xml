@@ -12,7 +12,7 @@
     <artifactId>broswer_linux</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>broswer_linux</name>
-    <description>浏览器本局域网远程连接linux</description>
+    <description>浏览器远程连接linux</description>
 
     <properties>
         <java.version>1.8</java.version>

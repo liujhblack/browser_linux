@@ -34,7 +34,7 @@ public class ReadThread extends Thread {
         try {
             br = new BufferedReader(new InputStreamReader(in, charset));
 
-            char[] chars = new char[1024];
+            char[] chars = new char[8192];
             int count;
 
             while ((count=br.read(chars)) !=-1 && flag == true) {

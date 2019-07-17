@@ -5,21 +5,16 @@ package com.liujhblack.controller;/**
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SCPClient;
 import ch.ethz.ssh2.Session;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.liujhblack.domain.SSHInfo;
 import com.liujhblack.util.EncryptUtil;
 import com.liujhblack.util.Result;
 import com.liujhblack.util.SSHMapUtil;
-import org.apache.tomcat.util.buf.HexUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -56,7 +51,8 @@ public class SSHInfoController {
                 return Result.isError("连接linux失败");
             }
             Session session = connection.openSession();
-            session.requestPTY("bash");
+//            session.requestPTY("bash");base会导致top，vi命令不可用xterm
+            session.requestPTY("xterm",90,30,0,0,null);
             session.startShell();
 
             String randomString = UUID.randomUUID().toString().replace("-", "");

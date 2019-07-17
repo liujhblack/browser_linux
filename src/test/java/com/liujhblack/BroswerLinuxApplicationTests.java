@@ -1,10 +1,16 @@
 package com.liujhblack;
 
+import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.SFTPv3Client;
+import ch.ethz.ssh2.SFTPv3FileAttributes;
 import com.liujhblack.util.EncryptUtil;
+import com.liujhblack.util.Result;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.IOException;
 
 
 @RunWith(SpringRunner.class)
@@ -19,7 +25,21 @@ public class BroswerLinuxApplicationTests {
 
 		String s = EncryptUtil.rsaPublicKeyEncode(src, publicKey);
 		String s1 = EncryptUtil.rsaPrivateKeyDecode(s, rsaPrivateKey);
-
 	}
+
+	@Test
+	public void sftp() throws IOException {
+        Connection connection = new Connection("39.107.33.18", 22);
+        connection.connect();
+        boolean flag = connection.authenticateWithPassword("root","Liu123456");
+        if (!flag) {
+            System.out.println("连接失败");
+        }
+        SFTPv3Client sftPv3Client=new SFTPv3Client(connection);
+        SFTPv3FileAttributes stat = sftPv3Client.stat("/root/test/aaa.png");
+        System.out.println("连接成功");
+        connection.close();
+        sftPv3Client.close();
+    }
 
 }
