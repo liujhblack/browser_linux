@@ -4,32 +4,41 @@
     <meta charset="UTF-8">
     <title>登录</title>
     <link href="img/favicon.png" rel="icon" type="image/png">
-            <meta name="idea viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-                        <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
-                        <link href="css/xterm.min.css" rel="stylesheet" type="text/css"/>
-                        <style>
-            .row {
-                    margin-top: 20px;
-                    margin-bottom: 10px;
-                }
+    <meta name="idea viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <!--<link href="css/xterm.min.css" rel="stylesheet" type="text/css"/>-->
+    <link href="xterm/xterm.css" rel="stylesheet" type="text/css"/>
+    <link href="xterm/addons/fullscreen/fullscreen.css" rel="stylesheet" type="text/css"/>
+    <style>
+        .row {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
 
-            .container {
-                    margin-top: 20px;
-                }
+        .container {
+            margin-top: 20px;
+        }
 
-            .btn {
-                    margin-top: 10px;
-                }
+        .btn {
+            margin-top: 10px;
+        }
 
-            .btn-danger {
-                    margin-left: 5px;
-                }
-            </style>
+        .btn-danger {
+            margin-left: 5px;
+        }
 
-                <script src="js/jquery.min.js"></script>
+    </style>
+
+    <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <!-- 导入term.js这个包 -->
-    <script type="text/javascript" src="js/xterm.min.js"></script>
+    <!--<script type="text/javascript" src="js/xterm.min.js"></script>-->
+    <script type="text/javascript" src="xterm/xterm.js"></script>
+    <script type="text/javascript" src="xterm/addons/fit/fit.js"></script>
+    <script type="text/javascript" src="xterm/addons/fullscreen/fullscreen.js"></script>
+    <script type="text/javascript" src="xterm/addons/attach/attach.js"></script>
+
+
     <script type="text/javascript" src="js/jsencrypt.min.js"></script>
 
     <!-- 导入这个页面依赖的js -->
@@ -79,7 +88,13 @@
                 var ws_url = window.location.href.split("/")[2];
                 var url = "ws://" + ws_url + '/shell/' + randomString;
                 webSocket = new WebSocket(url);
+
+               /* Terminal.applyAddon(attach);
+                var term = new Terminal();
+                term.attach(webSocket);*/
                 webSocket.onopen = function () {
+                    Terminal.applyAddon(fullscreen);
+                    Terminal.applyAddon(fit);
                     term = new Terminal({
                         cursorBlink: true,//光标闪烁
                         cursorStyle: "block", // 光标样式  null | 'block' | 'underline' | 'bar'
@@ -93,6 +108,7 @@
                     document.title = username + "@" + hostname;
                     $("#filetransfer").show();
                     term_onresize();
+                    term.toggleFullScreen(true);
                     term.focus();//焦点
                     term.on("data", function (data) {
                         webSocket.send(JSON.stringify({'data': data}));
@@ -116,14 +132,14 @@
             };
             function term_onresize() {
                 if (term != null) {
-                    var cols = parseInt(window.innerWidth / term._core.renderer.dimensions.actualCellWidth, 10) - 1;
-                    var rows = parseInt(window.innerHeight / term._core.renderer.dimensions.actualCellHeight, 10);
-                    term.resize(cols, rows);
+//                    $("#terminal").css("width",window.innerWidth);
+                    $("#terminal").css("height",window.innerHeight);
+                    term.fit();
                 }
             }
 
             $(window).resize(function () {
-                    term_onresize();
+                term_onresize();
             });
 
         });
@@ -135,7 +151,7 @@
     <div class="row">
         <div class="col">
             <label for="Hostname">Hostname</label>
-            <input class="form-control" type="text" id="hostname" name="hostname" value="39.107.33.18" required>
+            <input class="form-control" type="text" id="hostname" name="hostname" value="106.12.181.28" required>
         </div>
     </div>
     <div class="row">
@@ -147,7 +163,7 @@
     <div class="row">
         <div class="col">
             <label for="Password">Password</label>
-            <input class="form-control" type="password" id="password" name="password" value="Liu123456" required>
+            <input class="form-control" type="password" id="password" name="password" value="Liu123456@" required>
         </div>
     </div>
     <div class="row">

@@ -52,7 +52,7 @@ public class SSHInfoController {
             }
             Session session = connection.openSession();
 //            session.requestPTY("bash");base会导致top，vi命令不可用xterm
-            session.requestPTY("xterm",90,30,0,0,null);
+            session.requestPTY("xterm");
             session.startShell();
 
             String randomString = UUID.randomUUID().toString().replace("-", "");
